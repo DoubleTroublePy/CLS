@@ -39,6 +39,7 @@ Function stagingCheck {
 //Checks for chutes if vessel is crewed
 function chuteDetect {
 	local chutes is false.
+  if ship:crew():LENGTH = 0 {return 0.}
 	for p in ship:crew()[0]:part:children {
 		if p:hasmodule("ModuleParachute") {
 			set chutes to true. break.
