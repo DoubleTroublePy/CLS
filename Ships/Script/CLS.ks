@@ -98,15 +98,15 @@ set SteeringManager:RollTS to 5.                        // Reduces oversensitive
 set SteeringManager:maxStoppingTime to 1.
 
 // Script Library
-runpath("0:/CLS_lib/CLS_dv.ks"). 
-runpath("0:/CLS_lib/CLS_gen.ks").
-runpath("0:/CLS_lib/CLS_hud.ks").
-runpath("0:/CLS_lib/CLS_nav.ks").
-runpath("0:/CLS_lib/CLS_res.ks").
-runpath("0:/CLS_lib/CLS_twr.ks").
-runpath("0:/CLS_lib/CLS_ves.ks").
-runpath("0:/CLS_lib/lib_lazcalc.ks").
-runpath("0:/CLS_lib/lib_navball.ks").
+runpath("../CLS_lib/CLS_dv.ks"). 
+runpath("../CLS_lib/CLS_gen.ks").
+runpath("../CLS_lib/CLS_hud.ks").
+runpath("../CLS_lib/CLS_nav.ks").
+runpath("../CLS_lib/CLS_res.ks").
+runpath("../CLS_lib/CLS_twr.ks").
+runpath("../CLS_lib/CLS_ves.ks").
+runpath("../CLS_lib/lib_lazcalc.ks").
+runpath("../CLS_lib/lib_navball.ks").
 
 // Orbit Variables
 set atmAlt to ship:body:atm:height+1000.                                                    // +1000 as a safety net
@@ -800,7 +800,7 @@ Function StageJettison {
     set stagingEndTime to Time:seconds.
     set stagingApoapsisETA to eta:apoapsis.
     rcs off.
-    PrimaryFuel(). FuelTankUpper(ResourceOne). FuelCellDetect().
+    PrimaryFuel(). fuelTank(ResourceOne). FuelCellDetect().
     scrollprint("Stage "+currentstagenum+" Ignition").
     if runmode = 2 {
         lock throttle to min(TWRthrottle(maxAscentTWR),(TWRthrottle(maxAscentTWR)*((Time:seconds-stagingEndTime)-throttledelay)/3)).

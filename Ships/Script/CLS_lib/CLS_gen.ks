@@ -4,29 +4,29 @@
 
 @lazyglobal off.
 
-// Takes a "hh:mm:ss" input for a specific launch time and calculates seconds until this time.
-Function secondsToLaunch {
+// Takes a "hh:mm:ss" input for a specific launch time and calculates seconds 
+// until this time.
+function secondsToLaunch {
 	Parameter input.
+
 	Local inputString is input:tostring.
 	Local timeString is time:seconds:tostring.
 	
-	if inputString:contains(":") {
-		local Hours is inputString:split(":")[0].
-		local Minutes is inputString:split(":")[1].
-		local Seconds is inputString:split(":")[2].
-		local Ss is "0." + timeString:split(".")[1].
-		
-		Local TodaySeconds is time:second + Ss:tonumber() + time:minute*60 + time:hour*60*60.
-		Local TargetSeconds to Seconds:tonumber() + Minutes:tonumber()*60 + Hours:tonumber()*60*60.
-		
-		if TargetSeconds <= TodaySeconds+23 {
-			Return TargetSeconds + round(body:rotationperiod)*60*60 - TodaySeconds.
-		} else {
-			Return TargetSeconds - TodaySeconds.
-		}
-	} else {
-		return input.
+	if not inputString:contains(":") { return input. }
+
+	local hours is inputString:split(":")[0].
+	local minutes is inputString:split(":")[1].
+	local seconds is inputString:split(":")[2].
+	local ss is "0." + timeString:split(".")[1].
+	
+	Local todaySeconds is time:second + Ss:tonumber() + time:minute*60 + time:hour*60*60.
+	Local targetSeconds to seconds:tonumber() + minutes:tonumber()*60 + hours:tonumber()*60*60.
+	
+	if targetSeconds <= todaySeconds+23 {
+		return targetSeconds + round(body:rotationperiod)*60*60 - todaySeconds.
 	}
+		
+	return targetSeconds - todaySeconds.
 }
 
 //Figures out real world time (GMT).
@@ -45,11 +45,14 @@ Function realWorldTime {
 //Camera control function
 //Cameras for launch need to be tagged "CameraLaunch"
 //Cameras for Stage sep need to be tagged "CameraSep"
-//Cameras for onboard views need tagged "Camera1" or "camera2" with the number associated with their stage
-Function CameraControl {
-	Parameter StageNumber is currentstagenum.
-	Parameter Launch is false.
-	Parameter Abort is false.
+//Cameras for onboard views need tagged "Camera1" or "camera2" with the number 
+// associated with their stage
+function cameraControl {
+	//xxx i don't understand how variables context works
+	//parameter StageNumber is currentstagenum.
+	parameter Launch is false.
+	parameter Abort is false.
+
 	local stageString is "Camera" + StageNumber.
 	
 	if ship:partstaggedpattern("Camera"):length > 0 {

@@ -1,47 +1,59 @@
-// CLS_dv.ks - A library of functions specific to calculating  burn times / deltaV for the CLS (Common Launch Script)
+// CLS_dv.ks - A library of functions specific to calculating  burn
+// times / deltaV for the CLS (Common Launch Script)
+
 // Copyright © 2021 Qwarkk6
 // Lic. CC-BY-SA-4.0 
 
 @lazyglobal off.
 
 // calculates remaining dV of current stage
-Function stageDV {
-	local plist is stagetanks.
+function stageDV {
+	parameter stageTanks.
+	parameter aelist.
+	parameter vehicleConfig.
+	parameter ssrb.
+
+	local plist is stageTanks.
 	local englist is aelist.
+
 	if vehicleConfig = 1 {
 		set plist to ssrb.
 		set englist to ssrb.
 	}
-	local fuelRemaining is FuelRemaining(plist).
+
+	local fuelRemaining is fuelRemaining(plist).
 	local shipMass is ship:mass.
-	local altP is ship:body:atm:altitudepressure(ship:altitude).
+	local altP is ship:body:atm:altitudePressure(ship:altitude).
 	
 	// effective ISP
 	local mDotTotal is 0.
 	local thrustTotal is 0.
-	Global averageIsp is 0.
+	Global AverageIsp is 0.
+
 	for e in englist {
 		local thrust is e:thrust.
 		if thrust = 0 {
 			set thrust to e:possiblethrust.
 		} 
 		set thrustTotal to thrustTotal + thrust.
-		if e:isp = 0 { 
+		if e:isp = 0 {
 			set mDotTotal to mDotTotal + thrust / max(1,e:ispat(altP)).
 		} else {
 			set mDotTotal to mDotTotal + thrust / e:isp.
 		}
 	}
+
 	if not mDotTotal = 0 {
 		set averageIsp to thrustTotal/mDotTotal.
 	}
 	local massflow is thrustTotal/(averageIsp*constant:g0).
 	Global BurnRemaining is fuelRemaining/massFlow.
-	Global dVRemaining is (averageIsp*constant:g0*ln(shipMass / (shipMass-fuelRemaining)))-1.
+	Global DVRemaining is (averageIsp*constant:g0*ln(shipMass / (shipMass-fuelRemaining)))-1.
+	return 1.
 }
 
 // calculates dV required to circularise at current apoapsis
-Function circulariseDV_Apoapsis {
+function circulariseDV_Apoapsis {
 	local mu is ship:body:mu.
 	local apo is ship:apoapsis.
 	local rad is ship:body:radius.
@@ -52,7 +64,7 @@ Function circulariseDV_Apoapsis {
 }
 
 // calculates dV required to circularise at current Periapsis
-Function circulariseDV_Periapsis {
+function circulariseDV_Periapsis {
 	local mu is ship:body:mu.
 	local peri is ship:periapsis.
 	local rad is ship:body:radius.
@@ -63,9 +75,10 @@ Function circulariseDV_Periapsis {
 }
 
 // calculates dV required to circularise at a periapsis of the target orbit
-Function circulariseDV_TargetPeriapsis {
-	Parameter targetApo is 250000.
-	Parameter targetPeri is 250000.
+function circulariseDV_TargetPeriapsis {
+	parameter targetApo is 250000.
+	parameter targetPeri is 250000.
+	
 	local mu is ship:body:mu.
 	local rad is ship:body:radius.
 	
@@ -75,8 +88,8 @@ Function circulariseDV_TargetPeriapsis {
 }
 
 // calculates dV required at Apo to bring Peri to a target orbit
-Function BurnApoapsis_TargetPeriapsis {
-	Parameter targetOrbit is 250000.
+function burnApoapsis_TargetPeriapsis {
+	parameter targetOrbit is 250000.
 	local mu is ship:body:mu.
 	local rad is ship:body:radius.
 	local apo is ship:apoapsis.
@@ -87,7 +100,7 @@ Function BurnApoapsis_TargetPeriapsis {
 }
 
 // calculates dV required at peri to bring apo to a target orbit
-Function BurnPeriapsis_TargetApoapsis {
+function burnPeriapsis_TargetApoapsis {
 	Parameter targetOrbit is 250000.
 	local mu is ship:body:mu.
 	local rad is ship:body:radius.
@@ -99,12 +112,15 @@ Function BurnPeriapsis_TargetApoapsis {
 }
 
 // output[1] calculates burn time for the next manuever node. 
-// output[2] calculates half burn time for the next manuever node in order to calculate when to start the burn.
+// output[2] calculates half burn time for the next manuever node in order to 
+//			 calculate when to start the burn.
 // output[3] calculates throttle required to limit burn to tLimit parameter
 // ActiveEngines() needs to be run prior
-Function nodeBurnData {
+function nodeBurnData {
 	Parameter n_node is nextnode.
 	Parameter tLimit is 0.
+	parameter aelist.
+
 	local dV is n_node:deltav:mag.
 	local dVhalf is n_node:deltav:mag/2.
 	local f is ship:availablethrust.
@@ -117,12 +133,13 @@ Function nodeBurnData {
 	
 	// effective ISP
 	local p is 0.
-	for e in aelist {
-		set p to p + e:availablethrust / f * e:vacuumisp.
+	for n_e in aelist {
+		set p to p + n_e:availablethrust / f * n_e:vacuumisp.
 	}
 	
 	if tLimit > 0 {
-		set fLimit to (g*m*p*(1-e^((-1*dV)/(g*p))))/tLimit.	//kN thrust required to meet tLimit second burn time
+		//kN thrust required to meet tLimit second burn time
+		set fLimit to (g*m*p*(1-e^((-1*dV)/(g*p))))/tLimit.	
 		set manueverThrottle to flimit / f.
 		set f to min(f,fLimit).
 	}

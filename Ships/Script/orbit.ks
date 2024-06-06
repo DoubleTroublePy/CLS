@@ -800,7 +800,7 @@ Function StageJettison {
     set stagingEndTime to Time:seconds.
     set stagingApoapsisETA to eta:apoapsis.
     rcs off.
-    PrimaryFuel(). FuelTankUpper(ResourceOne). FuelCellDetect().
+    PrimaryFuel(). fuelTank(ResourceOne). FuelCellDetect().
     scrollprint("Stage "+currentstagenum+" Ignition").
     if runmode = 2 {
         lock throttle to min(TWRthrottle(maxAscentTWR),(TWRthrottle(maxAscentTWR)*((Time:seconds-stagingEndTime)-throttledelay)/3)).
